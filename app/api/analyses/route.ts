@@ -1,5 +1,5 @@
 import { env } from 'cloudflare:workers';
-import { analyze } from '@/lib/analyzer';
+import { analyzeWithAgent } from '@/lib/agent';
 
 function owner(request: Request) { return request.headers.get('oai-authenticated-user-id'); }
 function fail(message: string, status: number) { return Response.json({error:message},{status}); }
@@ -21,7 +21,7 @@ export async function POST(request: Request) {
   const jd = typeof body.jd === 'string' ? body.jd.trim() : '';
   const profile = typeof body.profile === 'string' ? body.profile.trim() : '';
   if (jd.length < 20 || profile.length < 15 || jd.length > 15000 || profile.length > 10000) return fail('JD 至少 20 字、个人资料至少 15 字，且请勿超过输入上限。',400);
-  const result = analyze(jd,profile);
+  const result = await analyzeWithAgent(jd,profile,env.OPENAI_API_KEY,env.OPENAI_MODEL);
   const id = crypto.randomUUID();
   const createdAt = Date.now();
   if (!user) return Response.json({item:{id,createdAt,result},saved:false});
@@ -41,3 +41,4 @@ export async function DELETE(request: Request) {
   try { await env.DB.prepare('DELETE FROM analyses WHERE id = ? AND owner_id = ?').bind(id,user).run(); return Response.json({ok:true}); }
   catch { return fail('删除失败，请稍后重试。',503); }
 }
+

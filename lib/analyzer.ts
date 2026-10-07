@@ -1,5 +1,5 @@
 export type Requirement = { text: string; kind: 'must' | 'bonus' | 'stack' | 'risk'; matched: boolean; evidence: string };
-export type Analysis = { title: string; score: number; verdict: string; requirements: Requirement[]; strengths: string[]; gaps: string[]; opener: string; questions: { question: string; answer: string }[]; method: string };
+export type Analysis = { title: string; score: number; verdict: string; requirements: Requirement[]; strengths: string[]; gaps: string[]; opener: string; questions: { question: string; answer: string }[]; method: string; mode?: 'agent' | 'rules'; sources?: { id: string; source: string; url?: string }[] };
 
 const STOP = /^(岗位职责|任职要求|职位要求|岗位要求|我们希望|工作内容|加分项|福利待遇|岗位介绍|职位描述|要求|职责|福利|薪资待遇|关于我们|你将负责|我们提供)[:：]?$/;
 const MUST = /必须|必备|要求|熟悉|掌握|需要|能够|具备|至少|学历|经验|must|required|proficient/i;
@@ -43,3 +43,4 @@ export function analyze(jd: string, profile: string): Analysis {
   ];
   return { title, score, verdict, requirements, strengths, gaps, opener, questions, method: '从 JD 中按句提取要求，标识学历与经验风险；用你提供的文字作关键词交叉匹配。分数仅代表文本覆盖度，不代表录用概率，也不推断未写出的经验。' };
 }
+
